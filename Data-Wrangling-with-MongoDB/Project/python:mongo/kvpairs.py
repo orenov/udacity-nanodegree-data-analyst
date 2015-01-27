@@ -6,10 +6,11 @@ def count_tags(filename):
     d = {}
     for event, elem in ET.iterparse(filename):
         if 'k' in elem.attrib:
-            if elem.attrib['k'] in d:
-                d[elem.attrib['k']] += 1
-            else:
-                d[elem.attrib['k']] = 1
+            if elem.attrib['k'] == 'amenity':
+                if elem.attrib['v'] in d:
+                    d[elem.attrib['v']] += 1
+                else:
+                    d[elem.attrib['v']] = 1
     d = sorted(d.iteritems(), key=lambda (k,v): (v,k))
    # d = itertools.islice(d, 10) 
     return d

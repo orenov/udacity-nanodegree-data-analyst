@@ -124,4 +124,48 @@ First of all i would like to notice, that 'k' is key and 'v' is value. There are
  ('highway', 67770),
  ('building', 73142)}
 \end{lstlisting}
+There are few nice things here. Due to Ukraine history we have official street name in ukrainian, unofficial russian and english names. For convinience I'm going to analyze here only international names. Let's check some values for key 'amenity'. For me it's very interesting.
+\begin{lstlisting}[language=json,firstnumber=1]
+ {('place_of_worship', 300),
+ ('bench', 331),
+ ('atm', 374),
+ ('kindergarten', 419),
+ ('fuel', 425),
+ ('restaurant', 514),
+ ('cafe', 520),
+ ('school', 543),
+ ('pharmacy', 566),
+ ('bank', 770),
+ ('parking', 1812)}
+\end{lstlisting}
+Let's try to analyze values, we've chosen three regular expressions to check text for lowercase, problem strings and others. Especially we would like to explore data with bad keys. 
+\begin{lstlisting}[language=json,firstnumber=1]
+{'lower': 258569,
+'lower_colon': 163,
+'other': 157676,
+'problemchars': 714}
+\end{lstlisting}
+Let's take a loot at keys which values contain problem characters.
+\begin{lstlisting}[language=json,firstnumber=1]
+{'building:color': 2,
+'contact:phone': 40,
+'phone': 558,
+'roof:colour': 19,
+'wheelchair': 1}
+\end{lstlisting}
+There are exists more keys, but i want to point at not standartized phone numbers for this dataset. Let's look at them.
+\begin{lstlisting}[language=json, firstnumber=1]
+'+3-8-093-207-31-01, +3-8-067-838-47-64, +3-8-067-401-75-61'
+ '+380 44 251-34-34',
+ '+38(098)-109-5001',
+ '+380 44 490 20 30',
+ '+38 067 500 81 89',
+\end{lstlisting}
+Oh.. There are can be list of phone numbers, different formats. I'm going to create one format for phone for this dataset. It's can will be a list of phones even list can have only size equal to 1.\par
+From wikipedia \url{http://en.wikipedia.org/wiki/Telephone_numbers_in_Ukraine} i've read that typical Ukrainian phone numbers is:
+\begin{itemize}
+\item +380 xx xxx-xx-xx (general phone numbers);
+\item +380 800 xxx-xxx (toll-free numbers).
+\end{itemize}
+I've written script for this preprocessing, before converting data in JSON and loading data to MongoDB.
 \end{document}
