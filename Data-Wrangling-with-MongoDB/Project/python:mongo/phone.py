@@ -12,16 +12,22 @@ problemchars = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
 def convertPhone(phone):
     # First step i'm going to remove all non number characters
     phone = re.sub('\D', '', phone)
-
+    if len(phone) == 10:
+        phone = "+38" + phone
+    elif len(phone) == 7:
+        phone = "+38044" + phone
+    elif len(phone) == 12:
+        phone = "+" + phone
     return phone
 
 def key_type(element, keys):
     if element.tag == "tag" and 'k' in element.attrib:
         if element.attrib['k'] in ['phone', 'contact:phone']:
-            s = element.attrib['v'].split(',')
+            s = re.split('[,;]', element.attrib['v'])
+            data = []
             for i in s:
-                i = convertPhone(i) 
-            print s
+                data.append(convertPhone(i)) 
+            print data
     return keys
 
 
