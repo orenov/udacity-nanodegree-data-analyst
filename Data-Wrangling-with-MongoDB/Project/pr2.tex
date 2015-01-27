@@ -1,0 +1,41 @@
+\documentclass[a4paper,12pt,twoside]{book}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+ \usepackage{hyperref}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{listings}
+
+\pagestyle{headings}
+ 
+ \title{Data Wrangle OpenStreetMaps Data}
+\date{February 3, 2015}
+\author{Oleksii Renov}
+        
+\begin{document}
+\maketitle
+
+\section*{Choosing map area}
+ 
+Choosing map area is very simple for me. I live in Kiev, Ukraine. So i hadn't got another choice. As the very first step I need minimum and maximum longitude and latitude. For this task I'd gone to \url{http://openstreetmap.org} in the search field I'd typed Kiev and choose the second link. I've the following web page in my browser.\par
+\includegraphics[scale=0.35]{keivinit.png}  
+\par
+I've done some zomming and choose next latitude and longitude parameters in my case:
+\begin{itemize}
+\item minimum latitude = 29.9048;
+\item maximum latitude = 50.0986;
+\item minimum longitude = 31.1600;
+\item maximum longitude = 50.7052.
+\end{itemize}
+ 
+ Next step is to download my dataset. I've gone in \url{http://overpass-api.de/query_form.html}, where i can past some queries to download data what i need.\par
+
+ My query is next:
+ \begin{lstlisting}
+(node(29.9048, 50.0986, 31.1600, 50.7052);<;);out;
+\end{lstlisting}
+Anyway there is exists numbers of variants loading data. One of them is simply go to this url \url{ http://overpass-api.de/api/map?bbox=29.9048,50.0986,31.1600,50.7052}. The xml file which I've already downloaded is very big, near 250mb. In my usual work i've chance working with xml, and files near 1mb is very hard to analyze. Let's move to processing this dataset.
+
+\section*{Process your Dataset}
+
+\end{document}
