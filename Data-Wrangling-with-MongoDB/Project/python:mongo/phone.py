@@ -18,6 +18,11 @@ def convertPhone(phone):
         phone = "+38044" + phone
     elif len(phone) == 12:
         phone = "+" + phone
+    elif len(phone) == 11:
+        phone = "+3" + phone
+    elif len(phone) == 9:
+        phone = "+380" + phone
+
     return phone
 
 def key_type(element, keys):
