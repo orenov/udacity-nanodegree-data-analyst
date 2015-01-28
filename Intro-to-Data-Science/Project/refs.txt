@@ -1,0 +1,6 @@
+References:
+
+1. Scipy - Normal test. Url: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.mstats.normaltest.html
+2. Wikipedia - Mann-Whitney U test. Url: http://en.wikipedia.org/wiki/Mann–Whitney_U_test
+3. Scipy - Mann-Whitney U test. Url: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.mannwhitneyu.html
+4. StatsModels - Regression. Url: http://statsmodels.sourceforge.net/0.5.0/generated/statsmodels.regression.linear_model.OLS.html
