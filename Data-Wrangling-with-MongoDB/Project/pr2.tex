@@ -161,11 +161,37 @@ There are exists more keys, but i want to point at not standartized phone number
  '+380 44 490 20 30',
  '+38 067 500 81 89',
 \end{lstlisting}
-Oh.. There are can be list of phone numbers, different formats. I'm going to create one format for phone for this dataset. It's can will be a list of phones even list can have only size equal to 1.\par
+Oh.. There are lots of phone numbers in different formats. I'm going to create one format for phone number for this dataset. It's can will be a list of phones even list can have only size equal to 1.\par
 From wikipedia \url{http://en.wikipedia.org/wiki/Telephone_numbers_in_Ukraine} i've read that typical Ukrainian phone numbers is:
 \begin{itemize}
 \item +380 xx xxx-xx-xx (general phone numbers);
-\item +380 800 xxx-xxx (toll-free numbers).
 \end{itemize}
-I've written script for this preprocessing, before converting data in JSON and loading data to MongoDB.
+I've written script for this preprocessing, before converting data in JSON and loading data to MongoDB. Next little python script handle different data formats and standartize them.
+\begin{lstlisting}[language=python, firstnumber=1]
+def convertPhone(phone):
+    # First step i'm going to remove all non number characters
+    phone = re.sub('\D', '', phone)
+    if len(phone) == 10:
+        phone = "+38" + phone
+    elif len(phone) == 7:
+        phone = "+38044" + phone
+    elif len(phone) == 12:
+        phone = "+" + phone
+    elif len(phone) == 11:
+        phone = "+3" + phone
+    elif len(phone) == 9:
+        phone = "+380" + phone
+
+    if len(phone) == 13:
+        phone = phone[0:4] + ' ' + phone[4:6] + ' ' + phone[6:9] +
+         '-' + phone[9:11] + '-' + phone[11:13]
+    return phone
+\end{lstlisting} 
+Results of transformation:
+\begin{itemize}
+\item '+380(44)593-12-06' to '+380 44 593-12-06';
+\item ' +380-44-599-60-82' to '+380 44 599-60-81';
+\item '3317730' to '+380 44 331-77-30'.
+\end{itemize}
+Nice results.
 \end{document}
