@@ -23,6 +23,8 @@ def convertPhone(phone):
     elif len(phone) == 9:
         phone = "+380" + phone
 
+    if len(phone) == 13:
+        phone = phone[0:4] + ' ' + phone[4:6] + ' ' + phone[6:9] + '-' + phone[9:11] + '-' + phone[11:13]
     return phone
 
 def key_type(element, keys):
@@ -33,6 +35,7 @@ def key_type(element, keys):
             for i in s:
                 data.append(convertPhone(i)) 
             print data
+            print s
     return keys
 
 
