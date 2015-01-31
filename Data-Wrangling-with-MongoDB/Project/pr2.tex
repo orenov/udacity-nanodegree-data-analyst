@@ -1,14 +1,25 @@
-\documentclass[a4paper,12pt,twoside]{book}
-\usepackage[english]{babel}
+\documentclass[a4paper,12pt,twoside]{article}
+\usepackage[russian,ukrainian,english]{babel}
+\usepackage[T2A,T1]{fontenc}
 \usepackage[utf8]{inputenc}
- \usepackage{hyperref}
+
+\usepackage{hyperref}
 \usepackage{graphics}
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{bera}
 \usepackage{listings}
 \usepackage{xcolor}
+
+
 \pagestyle{headings}
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
 \colorlet{punct}{red!60!black}
 \definecolor{background}{HTML}{EEEEEE}
@@ -193,5 +204,13 @@ Results of transformation:
 \item ' +380-44-599-60-82' to '+380 44 599-60-81';
 \item '3317730' to '+380 44 331-77-30'.
 \end{itemize}
-Nice results.
+Nice results. Let's audit streets names. Ukraine has next common street types:\par
+expected = ["\foreignlanguage{russian}{вулиця}",  "\foreignlanguage{russian}{бульвар}", "\foreignlanguage{russian}{проспект}", "\foreignlanguage{russian}{узвіз}", "\foreignlanguage{russian}{площа}", "\foreignlanguage{russian}{провулок}", "\foreignlanguage{russian}{шосе}", "\foreignlanguage{russian}{набережна}", "\foreignlanguage{russian}{тупик}"," \foreignlanguage{russian}{дорога}", "\foreignlanguage{russian}{проїзд}", "\foreignlanguage{russian}{шлях}"]\par
+And next mapping:\par
+mapping = [ "\foreignlanguage{russian}{вул.}": "\foreignlanguage{russian}{вулиця}",\par
+            "\foreignlanguage{russian}{пр}.": "\foreignlanguage{russian}{проспект}",\par
+            "\foreignlanguage{russian}{пл.}" : "\foreignlanguage{russian}{площа}",\par
+            '\foreignlanguage{russian}{пров.}' : '\foreignlanguage{russian}{провулок}'\par
+]
+Next step is converting xml to json. I've used ...
 \end{document}
