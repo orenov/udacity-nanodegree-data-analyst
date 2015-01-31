@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt,twoside]{article}
+\documentclass[a4paper,12pt]{article}
 \usepackage[russian,ukrainian,english]{babel}
 \usepackage[T2A,T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -11,15 +11,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 
-
 \pagestyle{headings}
- 
- 
- 
- 
- 
- 
- 
  
 \colorlet{punct}{red!60!black}
 \definecolor{background}{HTML}{EEEEEE}
@@ -55,6 +47,11 @@
       {]}{{{\color{delim}{]}}}}{1},
 }
  
+ \lstdefinestyle{DOS} {
+    backgroundcolor=\color{black},
+    basicstyle=\scriptsize\color{white}\ttfamily
+}
+
  
  \title{Data Wrangle OpenStreetMaps Data}
 \date{February 3, 2015}
@@ -178,7 +175,7 @@ From wikipedia \url{http://en.wikipedia.org/wiki/Telephone_numbers_in_Ukraine} i
 \item +380 xx xxx-xx-xx (general phone numbers);
 \end{itemize}
 I've written script for this preprocessing, before converting data in JSON and loading data to MongoDB. Next little python script handle different data formats and standartize them.
-\begin{lstlisting}[language=python, firstnumber=1]
+\begin{lstlisting}[language=python, firstnumber=1, caption={Phone standartization}]
 def convertPhone(phone):
     # First step i'm going to remove all non number characters
     phone = re.sub('\D', '', phone)
@@ -212,5 +209,115 @@ mapping = [ "\foreignlanguage{russian}{вул.}": "\foreignlanguage{russian}{в�
             "\foreignlanguage{russian}{пл.}" : "\foreignlanguage{russian}{площа}",\par
             '\foreignlanguage{russian}{пров.}' : '\foreignlanguage{russian}{провулок}'\par
 ]
-Next step is converting xml to json. I've used ...
+Next step is converting xml to json and loading data in mongodb. I've used data.py for creating json. Then I've started mongo shell navigate to folder which contain map.json. I've used mongoimport tool:
+\begin{lstlisting}[style=DOS]
+ mongoimport -d test -c kiev map.json
+\end{lstlisting}
+\subsection*{Data Overview}
+Let explore how number of documents in our db and it size.
+\begin{lstlisting}[caption={Size and number of documents in db.},style=DOS]
+> show dbs
+admin     (empty)
+examples  0.078GB
+local     0.078GB
+osm       (empty)
+test      0.953GB
+> use test
+switched to db test
+> db.kiev.find().count()
+1232721
+\end{lstlisting}
+Next step is to find number of 'ways', 'nodes' and uniques users.
+\begin{lstlisting}[style=DOS,caption={Basic statistics}]
+> db.kiev.find({"type":"node"}).count()
+1079585
+> db.kiev.find({"type":"way"}).count()
+152949
+> db.kiev.distinct('created.user').length
+1303
+\end{lstlisting}
+
+Let find more interesting statistics: number of cafes, cinemas, banks and fuels.
+\begin{lstlisting}[style=DOS]
+> db.kiev.find({'amenity':'cafe'}).count()
+520
+> db.kiev.find({'amenity':'cinema'}).count()
+47
+> db.kiev.find({'amenity':'bank'}).count()
+770
+> db.kiev.find({'amenity':'fuel'}).count()
+422
+\end{lstlisting}
+\section*{Additional Data Overview}
+Let's find top 10 amenities.
+\begin{lstlisting}[style=DOS]
+> db.kiev.aggregate([{"$match":{"amenity":{"$exists":1}}}, {"$group":{"_id":"$amenity",
+ "count":{"$sum":1}}}, {"$sort" : {"count" : -1}}, {"$limit" : 10}])
+{ "_id" : "parking", "count" : 1784 }
+{ "_id" : "bank", "count" : 770 }
+{ "_id" : "pharmacy", "count" : 566 }
+{ "_id" : "cafe", "count" : 520 }
+{ "_id" : "school", "count" : 517 }
+{ "_id" : "restaurant", "count" : 514 }
+{ "_id" : "fuel", "count" : 422 }
+{ "_id" : "kindergarten", "count" : 405 }
+{ "_id" : "atm", "count" : 374 }
+{ "_id" : "bench", "count" : 331 }
+\end{lstlisting}
+Let's explore to 10 banks in Kyiv.
+\begin{lstlisting}[style=DOS]
+> db.kiev.aggregate([{"$match":{"amenity":"bank"}}, 
+{"$group":{"_id":"$name", "count":{"$sum":1}}}, 
+{"$sort" : {"count" : -1}}, {"$limit" : 10}])
+{ "_id" : "OschadnyBank", "count" : 87 }
+{ "_id" : "PrivatBank", "count" : 86 }
+{ "_id" : "UkrSibBank", "count" : 51 }
+{ "_id" : null, "count" : 50 }
+{ "_id" : "Raifaisen Bank Aval", "count" : 21 }
+{ "_id" : "UniCredit Bank", "count" : 16 }
+{ "_id" : "PraveksBank", "count" : 16 }
+{ "_id" : "CityCommerce Bank", "count" : 15 }
+{ "_id" : "Sberbank Russia", "count" : 14 }
+{ "_id" : "Delta Bank", "count" : 13 }
+\end{lstlisting}
+All religions in city based on openstreetmaps data.
+\begin{lstlisting}[style=DOS]
+> db.kiev.aggregate([{"$match":{"amenity":"place_of_worship"}},
+ {"$group":{"_id":"$religion","count":{"$sum":1}}}, 
+ {"$sort":{"count":-1}},{"$limit":1}])
+{ "_id" : "christian", "count" : 275 }
+\end{lstlisting}
+How many traffic signals in Kiev based on OSM data?
+\begin{lstlisting}{style=DOS}
+> db.kiev.find({"highway":"traffic_signals"}).count()
+854
+\end{lstlisting}
+Let's find top 10 combinations of website and amenity.
+\begin{lstlisting}[style=DOS]
+> db.kiev.aggregate([{"$match": {"amenity":{"$exists":1}, "website":{"$exists":1}}}, 
+{"$group": {"_id":{"amenity": "$amenity", "website":"$website"}, "count":{"$sum":1}}}, 
+{"$sort":{"count":-1}}, {"$limit":10}])
+{ "_id" : { "amenity" : "bank", "website" : "www.oschadnybank.com" }, "count" : 64 }
+{ "_id" : { "amenity" : "bank", "website" : "www.ukrsibbank.com" }, "count" : 38 }
+{ "_id" : { "amenity" : "bank", "website" : "http://www.citycommercebank.com/" }, "count" : 14 }
+{ "_id" : { "amenity" : "bank", "website" : "www.deltabank.com.ua" }, "count" : 10 }
+{ "_id" : { "amenity" : "bank", "website" : "http://www.oschadnybank.com" }, "count" : 9 }
+{ "_id" : { "amenity" : "bank", "website" : "www.piraeusbank.ua" }, "count" : 7 }
+{ "_id" : { "amenity" : "bank", "website" : "http://www.ukrsibbank.com" }, "count" : 7 }
+{ "_id" : { "amenity" : "fast_food", "website" : "www.pizza-celentano.com" }, "count" : 6 }
+{ "_id" : { "amenity" : "bank", "website" : "http://www.procreditbank.com.ua/" }, "count" : 5 }
+{ "_id" : { "amenity" : "fast_food", "website" : "http://www.mcdonalds.ua" }, "count" : 5 }
+\end{lstlisting}
+
+\subsection*{Conclusion}
+After this review of the data it’s obvious that the Kiev city area is incomplete, though I believe it has been well cleaned for the purposes of this exercise. It interests me to notice a fair amount of GPS data makes it into OpenStreetMap.org on account of users’ efforts, whether by scripting a map editing bot or otherwise. I've cleaned and standartized phone numbers and street names, also i've found that also should be standartized websites info. For me is very surprising to see, that the most frequent amenity is parking and bank (my hypothesis was shops or restaurant). I've found top ten banks in Kiev using OSM data. It's interesting to know that we 854 traffic signals in Kiev. This was great experience to work maps data.
+
+\subsection*{List of Resources}
+\begin{enumerate}
+\item Openstreetmap. Url: \url{http://www.openstreetmap.org}
+\item Overpass Api. Url: \url{http://wiki.openstreetmap.org/wiki/Overpass_API}
+\item MongoDB Documentation. Url: \url{http://docs.mongodb.org/manual/core/document/}
+\item Python Mongo Drivers. Url: \url{http://docs.mongodb.org/ecosystem/drivers/python/}
+\item Unicode HowTo. Url:\url{https://docs.python.org/2/howto/unicode.html}
+\end{enumerate}
 \end{document}
