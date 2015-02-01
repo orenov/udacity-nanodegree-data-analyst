@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 \documentclass[a4paper,12pt]{article}
+=======
+\documentclass[a4paper,12pt,twoside]{article}
+>>>>>>> b81186fd26ccffd481ea754ae1ce355e34cbb5a1
 \usepackage[russian,ukrainian,english]{babel}
 \usepackage[T2A,T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -11,7 +15,18 @@
 \usepackage{listings}
 \usepackage{xcolor}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> b81186fd26ccffd481ea754ae1ce355e34cbb5a1
 \pagestyle{headings}
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
 \colorlet{punct}{red!60!black}
 \definecolor{background}{HTML}{EEEEEE}
@@ -175,7 +190,11 @@ From wikipedia \url{http://en.wikipedia.org/wiki/Telephone_numbers_in_Ukraine} i
 \item +380 xx xxx-xx-xx (general phone numbers);
 \end{itemize}
 I've written script for this preprocessing, before converting data in JSON and loading data to MongoDB. Next little python script handle different data formats and standartize them.
+<<<<<<< HEAD
 \begin{lstlisting}[language=python, firstnumber=1, caption={Phone standartization}]
+=======
+\begin{lstlisting}[language=python, firstnumber=1]
+>>>>>>> b81186fd26ccffd481ea754ae1ce355e34cbb5a1
 def convertPhone(phone):
     # First step i'm going to remove all non number characters
     phone = re.sub('\D', '', phone)
@@ -209,6 +228,7 @@ mapping = [ "\foreignlanguage{russian}{вул.}": "\foreignlanguage{russian}{в�
             "\foreignlanguage{russian}{пл.}" : "\foreignlanguage{russian}{площа}",\par
             '\foreignlanguage{russian}{пров.}' : '\foreignlanguage{russian}{провулок}'\par
 ]
+<<<<<<< HEAD
 Next step is converting xml to json and loading data in mongodb. I've used data.py for creating json. Then I've started mongo shell navigate to folder which contain map.json. I've used mongoimport tool:
 \begin{lstlisting}[style=DOS]
  mongoimport -d test -c kiev map.json
@@ -320,4 +340,7 @@ After this review of the data it’s obvious that the Kiev city area is incomple
 \item Python Mongo Drivers. Url: \url{http://docs.mongodb.org/ecosystem/drivers/python/}
 \item Unicode HowTo. Url:\url{https://docs.python.org/2/howto/unicode.html}
 \end{enumerate}
+=======
+Next step is converting xml to json. I've used ...
+>>>>>>> b81186fd26ccffd481ea754ae1ce355e34cbb5a1
 \end{document}
