@@ -1,0 +1,137 @@
+Exploring Diamonds dataset
+=====================================
+##Diamonds
+```{r}
+library(ggplot2)
+data(diamonds)
+```
+How many observations are in data set?
+```{r}
+dim(diamonds)[1]
+```
+How many variables are in data set?
+```{r}
+dim(diamonds)[2]
+```
+How many ordered factors are in data set?
+```{r}
+str(diamonds)
+```
+What letter represents the best color for a diamond?
+```{r}
+head(levels(diamonds$color),1)
+```
+
+##Price Histogram
+```{r}
+ggplot(aes(x=price), data=diamonds) + geom_histogram(color='blue', fill='#099DD9', binwidth=100) +
+  xlab("Price") + ylab("Frequency") + ggtitle("Histogram of diamonds prices")
+```
+
+##Price Histogram Summary
+```{r}
+summary(diamonds$price)
+```
+
+##Diamond Counts
+How many diamonds cost less than $500?
+```{r}
+dim(subset(diamonds, price < 500))[1]
+```
+How many diamonds cost less than $250?
+```{r}
+dim(subset(diamonds, price < 250))[1]
+```
+How many diamonds cost $15,000 or more?
+```{r}
+dim(subset(diamonds, price >= 15000))[1]
+```
+
+##Cheaper Diamonds
+```{r}
+ggplot(aes(x=price), data=subset(diamonds, price < 1500)) +
+  geom_histogram(color='blue', fill='#099DD9', binwidth = 1) +
+  xlab("Price") + ylab("Frequency") + ggtitle("Histogram of cheaper diamonds")
+```
+
+##Price by Cut Histograms
+```{r}
+ggplot(aes(x=price), data=diamonds) +
+  geom_histogram(color = 'blue', fill='#099DD9', binwidth=1) +
+  facet_wrap(~cut, ncol=2, scales="free") + xlab("Price") + ylab("Frequency") +
+  ggtitle("Histogram of diamonds by cut")
+```
+
+##Price by Cut
+```{r}
+by(diamonds$price, diamonds$cut, summary)
+```
+
+##Price per Carat by Cut
+```{r}
+ggplot(aes(x=price/carat), data=diamonds) +
+  geom_histogram(color='blue', fill='#099DD9', binwidth=.05) +
+  facet_wrap(~cut, ncol=2, scales='free') + xlab("Price per Carat") + ylab("Frequency") +
+  ggtitle("Price per Carat by Cut") + scale_x_log10()
+```
+
+##Price Box Plots
+```{r}
+ggplot(aes(y=price, x=cut), data=diamonds)+
+  geom_boxplot() + xlab("Cut") + ylab("Price") + ggtitle("Boxplot. Price by Cut")
+
+ggplot(aes(y=price, x=clarity), data=diamonds)+
+  geom_boxplot() + xlab("Clarity") + ylab("Price") + ggtitle("Boxplot. Price by Clarity")
+
+ggplot(aes(y=price, x=color), data=diamonds)+
+  geom_boxplot() + xlab("Color") + ylab("Price") + ggtitle("Boxplot. Price by Color")
+
+```
+
+##Interquartile Range
+What is the price range for the middle 50% of diamonds with color D?
+```{r}
+summary(subset(diamonds, color == "D")$price)
+#alternative
+quantile(subset(diamonds, color == "D")$price, probs=c(0.25, 0.75))
+```
+What is the price range for the middle 50% of diamonds with color J?
+```{r}
+quantile(subset(diamonds, color == "J")$price, probs=c(0.25, 0.75))
+```
+What is the IQR for diamonds with the best color?
+```{r}
+IQR(subset(diamonds, color == head(levels(diamonds$color), 1))$price)
+```
+What is the IQR for diamonds with the worst color?
+```{r}
+IQR(subset(diamonds, color == tail(levels(diamonds$color), 1))$price)
+```
+
+##Price per Carat Box Plots by Color
+```{r}
+ggplot(aes(y=price/carat, x=color), data=diamonds) +
+  geom_boxplot(colour = I("#3366FF")) + xlab("Color") + ylab("Price per Carat") +
+  ggtitle("Price per Carat by Color")
+```
+
+##Carat Frequency Polygon
+```{r}
+ggplot(aes(x = carat), data = diamonds) +
+  geom_freqpoly(binwidth=0.01, color='blue') +
+  xlab("Carat") + ylab("Frequency") + ggtitle("Carat Frequency Polygon")
+```
+
+What cara size has frequency greater than 2000?
+```{r}
+t <- table(diamonds$carat)
+t[t>2000]
+```
+
+##Session Info
+```{r}
+sessionInfo()
+
+```
+
+
