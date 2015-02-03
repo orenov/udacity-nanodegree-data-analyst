@@ -1,0 +1,157 @@
+Exploring Diamonds Dataset Part 2
+=============================================
+##First look at data.
+```{r}
+library(ggplot2)
+library(hexbin)
+data(diamonds)
+str(diamonds)
+```
+##Scatterplot of Price vs X (length in mm)
+```{r}
+ggplot(data=diamonds, aes(x = x, y = price)) + geom_point() + 
+  xlab("Length in mm") + ylab("Price") + ggtitle("Price vs Length in mm")
+```
+
+Same scatterplot without outliers.
+```{r}
+ggplot(data=diamonds, aes(x = x, y = price)) + geom_jitter(alpha=1/15, position = position_jitter(h=0)) + 
+  xlab("Length in mm") + ylab("Price") + ggtitle("Price vs Length in mm") +
+  coord_cartesian(xlim=quantile(diamonds$x, probs=c(.025, .975)), ylim=quantile(diamonds$price, probs=c(.025,.975))) 
+```
+
+What are observation about the scatterplot of price vs x?
+
+1. It's looks like there are exists quadratic dependency between variables.
+
+2. From plot we can see few groups of diamonds price's with respect to length.
+
+3. There exists outliers.
+
+##Correlations
+
+What is the correlation between price and x ?
+```{r}
+with(diamonds, cor.test(price, x, method='pearson'))
+```
+
+What is the correlation between price and y?
+```{r}
+with(diamonds, cor.test(price, y, method='pearson'))
+```
+
+What is the correlation between price and z?
+```{r}
+with(diamonds, cor.test(price, z, method='pearson'))
+```
+
+##Price vs Depth
+
+```{r}
+ggplot(data=diamonds, aes(x=depth, y = price)) + xlab("Depth") +
+  ylab("Price") + ggtitle("Price vs Depth") +
+  stat_binhex() +
+  scale_x_continuous(breaks = seq(min(diamonds$depth), max(diamonds$depth), 2))
+```
+
+Most diamonds are between this values of depth.
+```{r}
+with(diamonds, quantile(depth, probs=c(0.05,0.95)))
+```
+
+What's correlation between of depth vs price?
+```{r}
+with(diamonds, cor.test(depth, price, method='pearson'))
+```
+
+For prediction depth isn't so important looking at correlation coefficient, but we can't say that unimportant at all using significant level 5%. P-value is less than .05, so wee can reject hypothesys that true correlation is equal to 0. 
+
+##Price vs Carat
+
+Very intelligent scatterplot.
+```{r}
+ggplot(data=diamonds, aes(x=carat, y = price)) + xlab("Carat") +
+  ylab("Price") + ggtitle("Price vs Carat") +
+  stat_density2d(geom="tile", aes(fill=..density..^0.25, alpha=1), contour=FALSE) + 
+  geom_point(size=0.5) +
+  stat_density2d(geom="tile", aes(fill=..density..^0.25,     alpha=ifelse(..density..^0.25<0.4,0,1)), contour=FALSE) + 
+  scale_fill_gradientn(colours = colorRampPalette(c("white", blues9))(256))
+```
+
+##Price vs Volume
+
+```{r}
+diamonds$volume = with(diamonds, x*y*z)
+ggplot(data=diamonds, aes(x=volume, y=price)) + 
+  xlab("Volume") + ylab("Price") + ggtitle("Price vs Volume") + 
+  geom_jitter(alpha=1/20, position=position_jitter(h=0), color='blue') + 
+  coord_cartesian(xlim = c(0, quantile(diamonds$volume, 0.99)))
+```
+
+Correlation between Price and Volume.
+
+```{r}
+with(diamonds, cor.test(price, volume, method='pearson'))
+```
+
+How many diamonds have 0 Volume?
+```{r}
+table(diamonds$volume == 0)[2]
+```
+
+Correlation between Price and Volume without outliers.
+```{r}
+with(subset(diamonds, volume > 0 & volume < 800), cor.test(volume, price, method='pearson'))
+```
+
+##Price vs Volume Smooth
+```{r}
+ggplot(data=diamonds, aes(x=volume, y=price)) + 
+  xlab("Volume") + ylab("Price") + ggtitle("Price vs Volume") + 
+  geom_jitter(alpha=1/10, position=position_jitter(h=0)) + 
+  coord_cartesian(xlim = c(0, quantile(diamonds$volume, 0.99)), ylim = c(0, max(diamonds$price))) +
+  stat_smooth(method = "gam", formula = y ~ s(x), size = 1)
+```
+
+##Price vs Volume by Color
+```{r}
+ggplot(data=diamonds, aes(x=volume, y=price, color = color)) + 
+  xlab("Volume") + ylab("Price") + ggtitle("Price vs Volume") + 
+  geom_jitter(alpha=1/4, position=position_jitter(h=0)) + 
+  coord_cartesian(xlim = c(0, quantile(diamonds$volume, 0.99)), ylim = c(0, max(diamonds$price)))
+```
+
+##Mean price by Clarity using dplyr
+
+```{r}
+library(dplyr)
+diamondsByClarity <- diamonds %>% group_by(clarity) %>%
+  summarise(mean_price = mean(price),
+            median_price = median(as.numeric(price)),
+            max_price = max(price),
+            min_price = min(price),
+            n = n()) %>%
+  arrange(clarity)
+diamondsByClarity
+```
+
+##Bar chart of mean price
+
+```{r, fig.width=10, fig.height=7}
+library(gridExtra)
+mean_by_clarity <- diamonds %>% group_by(clarity) %>% summarise(mean_price = mean(price))
+mean_by_color <- diamonds %>% group_by(color) %>% summarise(mean_price=mean(price))
+mean_by_cut <- diamonds %>% group_by(cut) %>% summarise(mean_price = mean(price))
+
+g1 <- ggplot(data=mean_by_clarity, aes(y=mean_price, x = clarity, fill=clarity)) + geom_bar(stat='identity', colour="black") + xlab("Clarity") + ylab("Mean Price") + ggtitle("Mean price by clarity")
+g2 <- ggplot(data=mean_by_color, aes(y=mean_price, x = color, fill = color)) + geom_bar(stat='identity',colour="black") + xlab("Color") + ylab("Mean Price") + ggtitle("Mean price by color")
+g3 <- ggplot(data=mean_by_cut, aes(y=mean_price, x = cut, fill = cut)) + geom_bar(stat='identity',colour="black") + xlab("Cut") + ylab("Mean Price") + ggtitle("Mean price by cur")
+
+grid.arrange(g1,g2,g3)
+```
+
+##Session Info
+```{r} 
+sessionInfo()
+```
+
