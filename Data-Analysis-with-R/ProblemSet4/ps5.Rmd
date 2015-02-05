@@ -1,0 +1,134 @@
+Exploring Diamonds Dataset Part 3
+===================================
+##Diamonds Dataset
+```{r}
+library(ggplot2)
+data(diamonds)
+str(diamonds)
+```
+
+##Price Histograms with Facet and Color
+
+```{r}
+f <- ggplot(data=diamonds, aes(x=price, color = cut)) +
+  geom_histogram(binwidth=0.1) +
+  facet_wrap(~color) + scale_x_log10() +
+  xlab("Price") + ylab("Frequency") + ggtitle("Price with Facet and Color")
+ggsave("0.jpg", f)
+```
+
+##Price vs Table Colored by Cut
+
+```{r}
+f <- ggplot(data=diamonds, aes(x=table, y=price, color = cut)) + 
+  geom_point() +
+  xlab("Table") + ylab("Price") + ggtitle("Price vs Table by Cut") + 
+  scale_color_brewer(type = 'qual')
+ggsave("1.jpg", f)
+```
+
+What is the typical table range for the majority of diamonds of ideal cut?
+```{r}
+with(subset(diamonds, cut == "Ideal") , quantile(table, probs= c(0.1,0.9)))
+```
+
+What is the typical table range for the majority of diamonds of premium cut?
+```{r}
+with(subset(diamonds, cut=='Premium'), quantile(table, probs=c(0.1,0.9)))
+```
+
+##Price vs Volume and Diamond Clarity
+
+```{r}
+diamonds$volume <- with(diamonds, x*y*z)
+f <- ggplot(data=subset(diamonds,volume < quantile(volume, probs=0.99) & volume > 0), aes(x =volume, y=price, color=clarity)) +
+  geom_point() + scale_color_brewer(type = 'div') + scale_y_log10() +
+  xlab("Volume") + ylab("Price") + ggtitle("Price vs Volume by Clarity")
+ggsave("2.jpg", f)
+```
+
+##Price/Carat Binned, Faceted, & Colored
+
+```{r}
+f <- ggplot( data = diamonds,aes( x = cut, y = price/carat, color = color)) + 
+  geom_point(position = position_jitter(width = 0.4)) +
+  facet_wrap(~clarity) + 
+  scale_color_brewer(type='div') +
+  xlab("Cut") + ylab("Price/Carat")
+ggsave('3.jpg', f)
+```
+
+
+##Price vs Carat and Clarity with Transformations
+
+```{r warning=FALSE}
+library(scales)
+cuberoot_trans <- function() trans_new(
+  'cuberoot', transform=function(x) x^(1/3),
+  inverse=function(x) x^3)
+
+f <- ggplot(aes(x = carat, y = price, color = clarity), data = diamonds) + 
+  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+  scale_color_brewer(type = 'div',
+                     guide = guide_legend(title = 'Clarity', reverse = T,
+                                          override.aes = list(alpha = 1, size = 2))) +  
+  scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
+                     breaks = c(0.2, 0.5, 1, 2, 3)) + 
+  scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
+                     breaks = c(350, 1000, 5000, 10000, 15000)) +
+  ggtitle('Price (log10) by Cube-Root of Carat and Clarity')
+ggsave('4.jpg', f)
+
+```
+
+
+##Price vs Carat and Cut with Transformation
+```{r warning=FALSE}
+f <- ggplot(aes(x = carat, y = price, color = cut), data = diamonds) + 
+  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+  scale_color_brewer(type = 'div',
+                     guide = guide_legend(title = 'Cut', reverse = T,
+                                          override.aes = list(alpha = 1, size = 2))) +  
+  scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
+                     breaks = c(0.2, 0.5, 1, 2, 3)) + 
+  scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
+                     breaks = c(350, 1000, 5000, 10000, 15000)) +
+  ggtitle('Price (log10) by Cube-Root of Carat and Cut')
+ggsave('5.jpg', f)
+```
+
+
+##Price vs Carat and Color with Transformation
+```{r warning=FALSE}
+f <- ggplot(aes(x = carat, y = price, color = color), data = diamonds) + 
+  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+  scale_color_brewer(type = 'div',
+                     guide = guide_legend(title = 'Color', reverse = F,
+                                          override.aes = list(alpha = 1, size = 2))) +  
+  scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
+                     breaks = c(0.2, 0.5, 1, 2, 3)) + 
+  scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
+                     breaks = c(350, 1000, 5000, 10000, 15000)) +
+  ggtitle('Price (log10) by Cube-Root of Carat and Color')
+ggsave('6.jpg', f)
+```
+
+
+##Build Linear Model for Price
+
+```{r warning=FALSE}
+library(memisc)
+m1 <- lm(I(log(price)) ~ I(carat^(1/3)), data=diamonds)
+m2 <- update(m1, ~ . + carat)
+m3 <- update(m2, ~ . + cut)
+m4 <- update(m3, ~ . + color)
+m5 <- update(m4, ~ . + clarity)
+mtable(m1,m2,m3,m4,m5)
+```
+
+##Session Info
+
+```{r}
+sessionInfo()
+```
+
