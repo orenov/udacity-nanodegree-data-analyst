@@ -25,6 +25,7 @@ map
 *.synctex.gz
 turnstile_data_master_with_weather.csv
 .ipynb_checkpoints/*
-enron_mail_20110402/*
+Machine-Learning/enron_mail_20110402
+Machine-Learning/final_project/emails_by_address
 prosperLoanData.csv
 *.jpg
