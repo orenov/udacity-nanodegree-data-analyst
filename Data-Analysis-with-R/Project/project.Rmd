@@ -1,13 +1,13 @@
 ---
 title: "White Wine Quality"
 author: "Oleksii Renov"
-date: "February 5, 2015"
+date: "February 27, 2015"
 output: html_document
 ---
 
 ##Abstract
 
-In this project I'm going to investigate white wine quality. The final result will be predictive model of wine quality based on chemical properties. In the first section presented data exploration. In the second part building predictive model.
+In this project I'm going to investigate white wine quality. The final result will be predictive model and patterns discovery of wine quality based on chemical properties. In the first section presented data exploration. In the second part building predictive model.
 
 ##First Part Section
 
@@ -44,9 +44,9 @@ Looks very normal, let's add boxplot.
 ggplot(data=df, aes(y=fixed.acidity, x = quality)) + geom_boxplot(aes(color=quality.factor))
 ```
 
-There is no some significant difference between quality and fixed acidity. Remind that fixed acidity: most acids involved with wine or fixed or nonvolatile (do not evaporate readily).
+There is no some significant difference between quality and fixed acidity. Remind that fixed acidity means value of the most acids involved with wine.
 
-Move to next variable. It's volatile acidity : the amount of acetic acid in wine, which at too high of levels can lead to an unpleasant, vinegar taste.
+Move to next variable. It's volatile acidity (the amount of acetic acid in wine).
 
 ```{r}
 ggplot(data=df, aes(x=volatile.acidity)) + geom_histogram(aes(fill=..count..), binwidth=0.02)
@@ -58,13 +58,13 @@ Look at relationship with quality.
 ggplot(data=df, aes(y=volatile.acidity, x = quality)) + geom_boxplot(aes(fill=quality.factor))
 ```
 
-There is no logical separation. So i'm going to combine acidity variables with quality.
+There is no visible separation based on this plot. So I'm going to combine acidity variables with quality.
 
 ```{r}
-ggplot(data=df, aes(y=fixed.acidity, x = volatile.acidity)) + geom_point(aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3)
+ggplot(data=subset(df, fixed.acidity < quantile(fixed.acidity, 0.95) & volatile.acidity < quantile(volatile.acidity, .95)), aes(y=fixed.acidity, x = volatile.acidity)) + geom_point(aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3)
 ```
 
-Unfortunately, no visual understandable separation using this two features. Go forward to next.
+Unfortunately, no visual understandable separation using this two features. Go forward to next feature from white wine dataset.
 
 ```{r}
 g1 <- ggplot(data=df, aes(x=citric.acid)) + geom_histogram(aes(fill=..count..), binwidth=0.03)
@@ -72,7 +72,7 @@ g2 <- ggplot(data=df, aes(y=citric.acid, x = quality)) + geom_boxplot(aes(fill=q
 grid.arrange(g1,g2, ncol=1)
 ```
 
-Look at residual.sugar variable.
+Plots above don't show any clear patterns. But we can note that there are much more citric.acid outliers with quality equal 6. Look at residual.sugar variable. In histogram below we can observe unusual peaks with count near 600~800, but at the same time boxplots gives us no additional information about patterns. 
 
 ```{r}
 g1 <- ggplot(data=df, aes(x=residual.sugar)) + geom_histogram(aes(fill=..count..), binwidth=0.5)
@@ -83,10 +83,10 @@ grid.arrange(g1,g2, ncol=1)
 Combining residual.sugar and citric.acid variables to determine some linear separation.
 
 ```{r}
-ggplot(data=df, aes(y=residual.sugar, x = citric.acid)) + geom_point(aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3)
+ggplot(data=subset(df, residual.sugar < quantile(residual.sugar, .95) & citric.acid < quantile(citric.acid, .95)), aes(y=residual.sugar, x = citric.acid)) + geom_point(aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3)
 ```
 
-Move to next variable - chlorides.
+No clearn patterns, but we can observe quite nice relationship between this variables with different modes(citric.acid - centered, residual.sugar near zero) and plot looks nice. Move to next variable - chlorides.
 
 ```{r}
 g1 <- ggplot(data=df, aes(x=chlorides)) + geom_histogram(aes(fill=..count..), binwidth=0.005)
@@ -94,9 +94,9 @@ g2 <- ggplot(data=df, aes(y=chlorides, x = quality)) + geom_boxplot(aes(color=qu
 grid.arrange(g1,g2, ncol=1)
 ```
 
-More meaningful variable. Easily can see to many outliers in wine with quality 5 and 6.
+More meaningful variable. Easily can see to many outliers in wine with quality 5 and 6. But medians is still near the same value for all wine quality.
 
-Exploring together free silfur and total sulfur dioxides.
+Exploring together free silfur and total sulfur dioxides. From plots below there is no signifficant information for patterns discovery except few outliers for wine with quality 3.
 
 ```{r}
 g1 <- ggplot(data=df, aes(x=free.sulfur.dioxide)) + geom_histogram(aes(fill=..count..), binwidth=5)
@@ -108,10 +108,10 @@ grid.arrange(g1,g2,g3,g4, ncol=2)
 
 
 ```{r}
-ggplot(data=df, aes(y=free.sulfur.dioxide, x = total.sulfur.dioxide)) + geom_jitter(alpha=1/5,aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3)
+ggplot(data=subset(df, free.sulfur.dioxide < quantile(free.sulfur.dioxide, .95) & total.sulfur.dioxide < quantile(total.sulfur.dioxide, .95)), aes(y=free.sulfur.dioxide, x = total.sulfur.dioxide)) + geom_jitter(alpha=1/5,aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3)
 ```
 
-Unfortunately no meaningful separation yet. Going to next variables density and Ph. Density is too simillar for all kinds of wines, so i decided to use exp square root transfort.
+Unfortunately no meaningful separation yet, but insteresting plot above is one of the examples of regression to the mean i think. Going to next variables density and Ph. Density is too simillar for all kinds of wines and hard to  investigate due to some outliers, so i decided to use 0.95 quantile to filter data.
 
 ```{r}
 g1 <- ggplot(data=df, aes(x=exp(density))) + geom_histogram(aes(fill=..count..), binwidth=0.001) 
@@ -124,7 +124,7 @@ grid.arrange(g1,g2,g3,g4, ncol=2)
 We can see some interesting trends from this plots, like with less density -> quality higher. The same is for pH, but in median thinking. Combine this two features to look at this data.
 
 ```{r}
-ggplot(data=df, aes(y=exp(exp(density)), x = exp(pH))) + geom_jitter(aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3) + geom_abline(intercept = 14.85, slope = 0)
+ggplot(data=subset(df, density < quantile(density, .95) & pH < quantile(pH, .95)), aes(y=density, x = pH)) + geom_jitter(aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3) + geom_abline(intercept = .992, slope = 0)
 ```
 
 Look like under black line there is more chance that wine quality is high. In someway first result.
@@ -139,7 +139,7 @@ g4 <- ggplot(data=df, aes(y=sulphates, x = quality)) + geom_boxplot(aes(color=qu
 grid.arrange(g1,g2,g3,g4, ncol=2)
 ```
 
-In median thinking more alcohol in wine implies higher quality, based on this plots, unfortunately sulphates is now so separable for different wine qualities. Combining isn't suitable due to low variability of sulphates variables.
+In median thinking more alcohol in wine implies higher quality, based on this plots, unfortunately sulphates is not so separable for different wine qualities. Combining isn't suitable due to low variability of sulphates variables.
 
 ###Correlation exploration
 
@@ -211,20 +211,37 @@ Let's explore the highest correlation variable by quality.
 ggplot(data=subset(df, density < 1.005), aes(x=density, y = residual.sugar, color = quality.factor)) + geom_point() + facet_wrap(~quality.factor) + geom_smooth(colour='black')
 ```
 
+Investigate next relationship between alcohol and free.sulfur.dioxide by quality.
 
-###Predcition white wine quality based on features.
-
-I want to use simple tree model as my main model.
-
-```{r, message=FALSE}
-library(rpart)
-library(rattle)
-fit <- rpart(quality.factor ~ alcohol + density + pH + chlorides, data=df)
-printcp(fit)
-fancyRpartPlot(fit)
+```{r, warning=FALSE, message=FALSE}
+ggplot(aes(x=alcohol,y=chlorides, colour=quality.factor), data = df) +
+  stat_smooth(method=loess, fullrange=TRUE, alpha = 0.1, size =1.5 )# +
 ```
 
-Not good not bad, but acceptable as for initial solution.
+This plot gives us more visual separation between low and high quality wine. High quality wine have the lowest chlorides and alcohol more than 10%. ANd the lowest quality wine have more chlorides and low alcohol.
+
+###Prediction white wine quality based on features.
+
+I want to use random forest model as my main model.
+
+```{r, message=FALSE, warning=FALSE}
+library(caret)
+library(klaR)
+df_pred <- df
+df_pred$quality <- NULL
+ctrl <- trainControl(method = "repeatedcv",  repeats = 3)
+fit <- train(quality.factor ~ ., data = df_pred, method = "nb", trControl = ctrl)
+fit
+```
+
+Not good not bad, but acceptable as for initial solution. Let's visualize density estimation.
+Accuracy is the ratio of true classified divided by all true classified plus false classified wines. Train control is 10-fold cross validation repeated 3-times. For highest accuracy is used kernel estimation (not gaussian distributed parameters). Accuracy equal 0.4888546.
+
+```{r,warning=FALSE, message=FALSE}
+plot(fit$finalModel)
+```
+
+From densities we can easily observe that the main variable for wine quality separation is alcohol.
 
 ###Final plots and Summary
 
@@ -241,29 +258,30 @@ The median of alcohol variable by quality is likely to be higher for higher qual
 
 ####Plot Two
 
-```{r}
-ggplot(data=df, aes(y=exp(exp(density)), x = exp(pH))) + geom_jitter(aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3) + geom_abline(intercept = 14.85, slope = 0) + ylab("Transformed density") + xlab("Transformed pH") + ggtitle("Ph and density by quality Separation")
+```{r, warning=FALSE, message=FALSE}
+ggplot(data=subset(df, density < quantile(density, .95) & pH < quantile(pH, .95)), aes(y=density, x = pH)) + geom_jitter(alpha=1/4, aes(color=quality.factor)) + scale_colour_brewer(type="seq", palette=3) + geom_abline(intercept = .992, slope = 0) + ylab("density") + xlab("pH") + ggtitle("Ph and density by quality Separation")
 ```
 
 ####Description Two
 
-There is exists some soft separation line between higher and lower quality wines. One of this lines can be straight line of transformed density equal 14.85.
+There is exists some soft separation line between higher and lower quality wines. One of this lines can be straight line for density equal .992. Below .992 pH the most of wines with high quality, otherwise low quality.
 
 ####Plot Three
 
-```{r}
-ggplot(data=subset(df, chlorides < 0.2), aes(x=pH, y = chlorides, color = quality.factor)) + xlab("pH") +
-  ylab("Chlorides") + ggtitle("pH and Chlorides by quality") +
-  stat_binhex()
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(aes(x=alcohol,y=chlorides, colour=quality.factor), data = df) +
+  stat_smooth(method=loess, fullrange=TRUE, alpha = 0.1, size =1.5 )# +
 ```
+
 
 ####Description Three
 
-From this plot we can clearly see that data have some clusters, where white wine quality is the same. It seems to be one of the solutions for classifying wines with this known boundaries. Higher chlorides variables means lower wine quality. pH has some interval for good wines.
+This plot gives us more visual separation between low and high quality wine. High quality wine in general have the lowest chlorides and alcohol more than 10%. And the lowest quality wine have more chlorides and low alcohol.
 
 ###Reflection
 
-The white wine quality data set contains information on almost 4898 wines, their chemical properties and wine quality from best experts (i believe). I've asked a question how we can predict wine quality using only information about chemical properties of this wine. Quality measures from 0 (worst) to 10 (best). I started by understanding the individual variables in the data set and their influence on wine quality. I've transformed quality from numeric to ordered factor. During exploration I've found some linear patterns how to separate low and high quality wines. The highest influence on wine quality is alcohol content in wine, it's has the highest correlation. During correlation analysis I've found four important variables for this task are Alcohol, pH, density and chlorides. This variables I've included in simple tree model for predicting wine quality. I've obtained 0.55 root node error. It's quite higher. From multivariate plots i can conclude, that there are non linear patterns in this data set. More better model for prediction is SVM, it's gives high accuracy as described in this article http://www3.dsi.uminho.pt/pcortez/white.pdf.
+The white wine quality data set contains information on almost 4898 wines, their chemical properties and wine quality from best experts (i believe). I've asked a question how we can predict wine quality using only information about chemical properties of this wine. Quality measures from 0 (worst) to 10 (best). I started by understanding the individual variables in the data set and their influence on wine quality. I've transformed quality from numeric to ordered factor. During exploration I've found some linear patterns how to separate low and high quality wines. The highest influence on wine quality is alcohol content in wine, it's has the highest correlation and density separation. During correlation analysis I've found four important variables for this task are Alcohol, pH, density and chlorides. This variables I've included in simple naive bayes model for predicting wine quality. I've obtained 0.4888546 accuracy. It's quite high, but for initial result is ok. From multivariate plots i can conclude, that there are non linear patterns in this data set. More better model for prediction is SVM, it's gives high accuracy as described in this article http://www3.dsi.uminho.pt/pcortez/white.pdf.
 
 ###List of Resources
 
