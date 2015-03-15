@@ -218,11 +218,20 @@ ggplot(aes(x=alcohol,y=chlorides, colour=quality.factor), data = df) +
   stat_smooth(method=loess, fullrange=TRUE, alpha = 0.1, size =1.5 )# +
 ```
 
-This plot gives us more visual separation between low and high quality wine. High quality wine have the lowest chlorides and alcohol more than 10%. ANd the lowest quality wine have more chlorides and low alcohol.
+This plot gives us more visual separation between low and high quality wine. High quality wine have the lowest chlorides and alcohol more than 10%. And the lowest quality wine have more chlorides and low alcohol.
+
+Let's make a scatter plot of chlorides versus alcohol by quality.
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(aes(x=alcohol, y=chlorides, color = quality.factor), data = df) + geom_point() + 
+  facet_wrap(~quality.factor) + geom_smooth(colour='black')
+```
+
+Very interesting peaks for quality 5 and 6. 
 
 ###Prediction white wine quality based on features.
 
-I want to use random forest model as my main model.
+I want to use naive bayes model as my main model.
 
 ```{r, message=FALSE, warning=FALSE}
 library(caret)
@@ -270,14 +279,14 @@ There is exists some soft separation line between higher and lower quality wines
 
 
 ```{r, warning=FALSE, message=FALSE}
-ggplot(aes(x=alcohol,y=chlorides, colour=quality.factor), data = df) +
-  stat_smooth(method=loess, fullrange=TRUE, alpha = 0.1, size =1.5 )# +
+ggplot(aes(x=alcohol, y=chlorides, color = quality.factor), data = df) + geom_point() + 
+  facet_wrap(~quality.factor) + geom_smooth(colour='black') + ylab("Chlorides") + xlab("Alcohol") +
+  ggtitle("Chlorides vs Alcohol by Quality")
 ```
-
 
 ####Description Three
 
-This plot gives us more visual separation between low and high quality wine. High quality wine in general have the lowest chlorides and alcohol more than 10%. And the lowest quality wine have more chlorides and low alcohol.
+This plot gives us more specific visual separation between low and high quality wine. High quality wine in general have the lowest chlorides and alcohol more than 10%. And the lowest quality wine have more chlorides and low alcohol. Also we can see unusual and interesting peaks for 5 and six quality wines. Also we can see nearly identical smooth lines for quality 6, 7, 8.
 
 ###Reflection
 
